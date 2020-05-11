@@ -31,7 +31,7 @@
 
 import datetime
 from os import listdir
-from rulekeep.utils import *
+from .utils import *
 import yaml
 
 cache = {}

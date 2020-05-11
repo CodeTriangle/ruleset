@@ -29,54 +29,63 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
-from sys import argv
-from os import mkdir
-from hashlib import sha1
-from datetime import date
+import sys
+import os
+import hashlib
+import datetime
 import yaml
 
-def smkdir(fn):
+def smkdir(fn: str):
+    """Make the directory `fn` iff it does not exist already"""
+    
     try:
-        mkdir(fn)
+        os.mkdir(fn)
         print("made directory {}".format(fn))
     except:
         print("directory {} already exists".format(fn))
 
-def get_contents(fn):
+def get_contents(fn: str) -> str:
+    """Open the file `fn`; read and return its contents"""
+    
     with open(fn) as f:
         return f.read()
 
-def write_file(fn, tx):
+def write_file(fn: str, tx: str):
+    """Open the file `fn`; write `tx` to that file"""
+    
     with open(fn, "w") as f:
         f.write(tx)
 
-def get_hash(tx):
-    return sha1(bytes(str(tx), "utf8")).hexdigest()
+def get_hash(tx: str) -> str:
+    """Get the SHA1 hash of `tx` and return it as a string of hex digits"""
+    
+    return hashlib.sha1(bytes(str(tx), "utf8")).hexdigest()
 
-def string_tablist(tx):
+def string_tablist(tx: str) -> dict:
+    """Read TSV string, return dict {"col1": ["col2", "col3", ...]}"""
+
+    # Maybe I should use the Python-provided CSV module for this?
     return {id: hash for id, hash in
         [[line.split("\t")[0], line.split("\t")[1:]] for line in tx.split("\n")]
     }
 
-def tablist_string(dc):
+def tablist_string(dc: dict) -> str:
+    """Performs `string_tablist()` in reverse"""
+    
     return "\n".join(
         ["\t".join([line[0], *[str(i) for i in line[1]]]) for line in dc.items()]
     )
 
-def to_int_list(ls):
+def to_int_list(ls: list) -> str:
+    """Run through `ls`, turning all entries into `int` if possible"""
+    
     result = []
     for i in ls:
         try: result.append(int(i))
         except ValueError: pass
-    return result
+    return result 
 
-def is_in(target, char):
-    if target.find(char) == -1: return False
-    else: return True
-
-def args_contain(st):
-    if is_in(argv[1], st): return True
-    else: return False
-
-def better_date(dt):
+def better_date(dt: datetime.date) -> str:
+    """Take a date and return it in a better form"""
+    
     return dt.strftime("%d %b %Y")

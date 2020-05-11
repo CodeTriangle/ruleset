@@ -29,8 +29,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
-from rulekeep.utils import *
-from rulekeep.history import *
+from .utils import *
+from .history import *
 
 def line(ch, w=72):
     return "".join([ch for i in range(0, w)])

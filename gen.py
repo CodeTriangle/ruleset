@@ -1,26 +1,27 @@
 from datetime import datetime as dt
-from rulekeep.utils import *
-from rulekeep.templates import *
+import sys
+from rulekeep import *
 import yaml
 
-short = False
-full = False
-regen = False
+if len(sys.argv) == 1:
+    sys.exit("at least one argument needed (try 's' or 'f')")
 
-short = args_contain("s")
-full  = args_contain("f")
-regen = args_contain("r")
+# Argument handling
+short = "s" in sys.argv[1]
+full  = "f" in sys.argv[1]
+regen = "r" in sys.argv[1]
 
-slr = ""
-flr = ""
-toc = ""
-prop_list = {}
+slr = ""       # stores the SLR
+flr = ""       # stores the FLR
+toc = ""       # stores the Table of Contents
+prop_list = {} # stores {id: sha1, power, title} of rules
 rules = []
 
 try:
     prop_list = string_tablist(get_contents("meta/proplist"))
     print("property list loaded")
-except:
+except IOError:
+    print("property list not found; continuing without")
     pass
 
 smkdir("meta")
@@ -86,7 +87,7 @@ header = get_contents("config/header").format(
 powers = {}
 
 for rule in rules:
-    power = prop_list[str(rule)][1]
+    power = str(prop_list[str(rule)][1])
     try: powers[power] = powers[power] + 1
     except KeyError: powers[power] = 1
 
