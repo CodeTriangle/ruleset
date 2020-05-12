@@ -37,11 +37,12 @@ import yaml
 cache = {}
 
 def proposal_data(num, log=False):
-    try:
-        cache[num]
-        if log: print("\tp%s\talready scanned" % num)
-    except KeyError:
-        if log: print("\tp%s\treading from file " % num)
+    global cache
+    
+    if try_get(cache, num):
+        if log: print(f"\t{num}\talready scanned")
+    else:
+        if log: print(f"\t{num}\treading from file")
         cache[num] = yaml.load(
             get_contents("proposals/" + num),
             Loader=yaml.FullLoader
@@ -54,33 +55,15 @@ def chtype_string(change):
     if chtype == "enactment":
         return "Enacted"
     elif chtype == "initial":
-        return "Initial {} rule {}".format(
-            change["mutability"], change["id"]
-        )
+        return f"Initial {change['mutability']} rule {change['id']}"
     elif chtype == "mutation":
-        result =  "Mutated"
-
-        try: result = result + " from MI=" + str(change["old-mi"])
-        except KeyError: pass
-
-        try: result = result + " to MI=" + str(change["new-mi"])
-        except KeyError: pass
-
-        return result
+        return f"Mutated from MI={change['old-mi']} to {change['new-mi']}"
     elif chtype == "renumbering":
         return "Renumbered"
     elif chtype == "reenactment":
-        result = "Re-enacted({})"
-        try: change["unchanged"]
-        except KeyError: result += " and amended"
-        return result
+        return f"Re-enacted({{}}){' and amended' if try_get(change, 'unchanged') else ''}"
     elif chtype == "amendment":
-        result = "Amended"
-        try:
-            if change["uncounted"] == True: pass
-        except KeyError:
-            result += "({})"
-        return result
+        return f"Amended{'({})' if try_get(change, 'uncounted') else ''}"
     elif chtype == "infection-amendment":
         return "Infected and amended({})"
     elif chtype == "infection":
@@ -90,14 +73,7 @@ def chtype_string(change):
     elif chtype == "repeal":
         return "Repealed"
     elif chtype == "power-change":
-        result = "Power changed"
-        try: result = result + " from " + str(change["old-power"])
-        except KeyError: pass
-
-        try: result = result + " to " + str(change["new-power"])
-        except KeyError: pass
-
-        return result
+        return f"Power changed from {change['old-power']} to {change['new-power']}"
     elif chtype == "committee-assignment":
         return "Assigned to the " + change["committee"]
     elif chtype == "unknown":
@@ -107,60 +83,41 @@ def chtype_string(change):
         return "Changed"
 
 def agent_string(agent):
-    try:
+    if try_get(agent, "proposal"):
         proposal = agent["proposal"]
         result = "P" + str(proposal)
         data = proposal_data(proposal)
-
-        try: result = result + " '%s'" % data["title"]
-        except KeyError: pass
-
+        result = f"{result} '{try_get(data, 'title')}'"
         metadata = []
 
-        try: metadata.append(data["chamber"])
-        except KeyError: pass
+        if try_get(data, "chamber"):
+            metadata.append(data["chamber"])
+        if try_get(data, "disinterested"):
+            metadata.append("disi.")
+        if metadata:
+            result = f"{result} [{', '.join(metadata)}]"
         
-        try:
-            if data["disinterested"]:
-                metadata.append("disi.")
-        except KeyError: pass
-
-        if metadata != []:
-            result = result + " [%s]" % ", ".join(metadata)
-        
-        try:
-            data["author"]
+        if try_get(data, "author"):
             return result + " " + proposal_blame(proposal)
-        except KeyError:
+        else:
             return result
-    except KeyError: pass
 
-    try: return "R%d" % agent["rule"]
-    except KeyError: pass
-
-    try: return "a convergence caused by " + agent_string(agent["convergence"])
-    except KeyError: pass
-
-    try:
-        agent["cleaning"]
-        return "cleaning ({})".format(agent["cleaning"]["by"])
-    except KeyError: pass
-
-    try: return agent["ratification"]["document"] + " ratification"
-    except KeyError: return "ratification"
-
-    try: return "Decree given by " + agent["decree"]
-    except KeyError: pass
+    if try_get(agent, "rule"):
+        return f"R{agent['rule']}"
+    if try_get(agent, "convergence"):
+        return f"a convergence caused by {agent_string(agent['convergence'])}"
+    if try_get(agent, "cleaning"):
+        return f"cleaning ({agent['cleaning']['by']})"
+    if try_get(agent, "ratification"):
+        return f"ratification of {agent['ratification']['document']}"
+    if try_get(agent, "decree"):
+        return f"Decree given by {agent['decree']}"
 
 def proposal_blame(num):
     proposal = proposal_data(num)
     result = "(" + proposal["author"]
-    try:
-        coauthors = proposal["coauthors"]
-        if coauthors != []:
-            result = ", ".join([result, *coauthors])
-    except KeyError: pass
-    except TypeError: pass
+    if try_get(proposal, 'coauthors'):
+        result = ", ".join([result, *proposal['coauthors']])
     return result + ")"
 
 def date_string(date):
@@ -182,12 +139,10 @@ def date_string(date):
 def change_string(ch):
     result = chtype_string(ch["change"])
 
-    try:
-        result = result + " by " + agent_string(ch["agent"])
-    except KeyError: pass
-
-    try: result = result + ", " + date_string(ch["date"])
-    except: pass
+    if try_get(ch, "agent"):
+        result = f"{result} by {agent_string(ch['agent'])}"
+    if try_get(ch, "date"):
+        result = f"{result}, {date_string(ch['date'])}"
 
     return result
 

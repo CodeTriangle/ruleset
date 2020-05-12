@@ -42,16 +42,14 @@ for section in yaml.load(get_contents("config/index"), Loader=yaml.FullLoader):
             try:
                 h = prop_list[str(rule)]
                 if h[0] == get_hash(data):
-                    if short: slr = slr + get_contents("meta/short/%d" % rule)
+                    if short: slr = slr + get_contents(f"meta/short/{rule}")
                     if full:
-                        flr = flr + get_contents("meta/full/%d" % rule)
-                        toc = toc + "   * Rule {0:>4}: {1}\n".format(
-                            rule, h[2]
-                        )
-                    print("%d\tunchanged" % rule)
+                        flr = flr + get_contents(f"meta/full/{rule}")
+                        toc = toc + f"   * Rule {rule:>4}: {h[2]}\n"
+                    print(f"{rule}\tunchanged")
                     continue
-            except: print("%d\tchanged" % rule)
-        else: print("%d\tprocessing" % rule)
+            except: print(f"{rule}\tchanged")
+        else: print(f"{rule}\tprocessing")
 
         ldata = yaml.load(data, Loader=yaml.FullLoader)
         
@@ -69,13 +67,10 @@ for section in yaml.load(get_contents("config/index"), Loader=yaml.FullLoader):
             slr = slr + gen
         if full:
             gen = full_rule(ldata)
-
-            toc = toc + "   * Rule {0:>4}: {1}\n".format(
-                rule, ldata["name"]
-            )
+            toc = toc + f"   * Rule {rule:>4}: {ldata['name']}\n"
             
             print("\tprocessed full rule")
-            write_file("meta/full/" + str(rule), gen)
+            write_file(f"meta/full/{rule}", gen)
             flr = flr + gen
 
 header = get_contents("config/header").format(
@@ -91,7 +86,9 @@ for rule in rules:
     try: powers[power] = powers[power] + 1
     except KeyError: powers[power] = 1
 
-power_string = "\n".join(["{0:<2} with Power={1}".format(powers[i], i) for i in sorted(powers.keys())])
+power_string = "\n".join(
+    [f"{powers[i]:<2} with Power={i}" for i in sorted(powers.keys())]
+)
 
 if short: write_file(
     "slr.txt", get_contents("config/slr_format").format(

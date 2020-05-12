@@ -32,6 +32,9 @@
 from .utils import *
 from .history import *
 
+short_rule_format = get_contents("config/short_rule_format")
+full_rule_format  = get_contents("config/full_rule_format")
+
 def line(ch, w=72):
     return "".join([ch for i in range(0, w)])
 
@@ -47,43 +50,39 @@ def section_heading(section):
 def rule_heading(rule):
     rev = 0
     for i in rule["history"]:
-        try:
-            i["change"]["uncounted"]
-        except KeyError:
+        if not try_get(i["change"], "uncounted"):
             if i["change"]["type"] in ["amendment",
                                        "reenactment",
                                        "infection-amendment"]:
                 rev = rev + 1
-    return "Rule {}/{} (Power={})\n{}".format(
-        rule["id"], rev, rule["power"], rule["name"]
-    )
+    return f"Rule {rule['id']}/{rev} (Power={rule['power']})\n{rule['name']}"
 
 def short_rule(rule):
-    return "{}\n\n{}\n{}\n".format(
-        rule_heading(rule), indent(rule["text"]), line("-")
+    global short_rule_format
+    
+    return short_rule_format.format(
+        heading=rule_heading(rule),
+        text=indent(rule["text"].strip()),
+        line=line("-")
     )
 
 def history(hist):
     result = ""
 
     for change in hist:
-        result = result + "\n" + fixed_width(change_string(change))
+        result = f"{result}\n{fixed_width(change_string(change))}"
     
     return result.format(*range(1, result.count("{}") + 1))
 
 def annotation(anno):
     result = ""
-    try:
-        anno["cfjs"]
+    if try_get(anno, "cfjs"):
         cfj_list = []
         for cfj in anno["cfjs"]:
             cfj_list.append("CFJ " + str(cfj["id"]))
             if cfj["called"] != None:
-                cfj_list[-1] = cfj_list[-1] + " (called {})".format(
-                    date_string(cfj["called"])
-                )
+                cfj_list[-1] = f"{cfj_list[-1]} (called {date_string(cfj['called'])})"
             result = result + ", ".join(cfj_list) + ": ";
-    except KeyError: pass
     result = result + anno["text"]
     return fixed_width(result)
 
@@ -96,16 +95,19 @@ def annotation_list(annos):
     return result
 
 def full_rule(rule):
-    result = "{}\n\n{}\nHistory:\n{}\n\nAnnotations:\n".format(
-        rule_heading(rule),
-        indent(rule["text"]),
-        history(rule["history"])
-    )
+    global full_rule_format
 
-    try: result = result +  annotation_list(rule["annotations"])
+    annotations = ""
+    try: annotations = annotation_list(rule["annotations"])
     except KeyError: pass
 
-    return result + "\n" + line("-") + "\n"
+    return full_rule_format.format(
+        heading=rule_heading(rule),
+        text=indent(rule["text"].strip()),
+        history=history(rule["history"]).strip(),
+        annotations=annotations.strip() if annotations != "" else "(none)",
+        line=line("-")
+    )
 
 def fixed_width(input_string, w=72):
     instr = input_string.split(" ")

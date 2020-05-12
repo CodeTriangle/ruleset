@@ -36,7 +36,7 @@ import datetime
 import yaml
 
 def smkdir(fn: str):
-    """Make the directory `fn` iff it does not exist already"""
+    """Make the directory `fn` if it does not exist already"""
     
     try:
         os.mkdir(fn)
@@ -55,6 +55,14 @@ def write_file(fn: str, tx: str):
     
     with open(fn, "w") as f:
         f.write(tx)
+
+def try_get(d: dict, k):
+    """Attempt to get item `k` of `d`; return empty string if doesn't exist"""
+
+    try:
+        return d[k]
+    except KeyError:
+        return ""
 
 def get_hash(tx: str) -> str:
     """Get the SHA1 hash of `tx` and return it as a string of hex digits"""
