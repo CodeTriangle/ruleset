@@ -1,3 +1,24 @@
+# This is a quick and dirty thing I whipped up to help me move the
+# messages displayed in the "History" section of Full Rules for each
+# type of change. Changes are stored as YAML, and generally only
+# consist of the type of change, an agent, and a date of the
+# change. That would be simple.
+# 
+# But different types of changes have different parameters, which can
+# be optionally specified in the change. This small conditional
+# formatting thingy deals with them in a (hopefully) safe way.
+#
+# It works like this:
+#   {variable:isdefined:isundefined}
+# 
+# If `change[variable]` is defined (i.e. not `None` or `Null` or
+# anything else that tests falsey) then `isdefined` is inserted;
+# otherwise, `isundefined` is inserted. In addition, all instances of
+# `$` in `isdefined` are replaced with `change[varible]`.
+#
+# Should another type of change come about just add it here, and
+# handle its special values properly.
+
 enactment: >
   Enacted
 initial: >
