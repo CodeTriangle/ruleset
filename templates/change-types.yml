@@ -9,7 +9,7 @@
 # formatting thingy deals with them in a (hopefully) safe way.
 #
 # It works like this:
-#   {variable:isdefined:isundefined}
+#   <variable:isdefined:isundefined>
 # 
 # If `change[variable]` is defined (i.e. not `None` or `Null` or
 # anything else that tests falsey) then `isdefined` is inserted;
@@ -22,27 +22,27 @@
 enactment: >
   Enacted
 initial: >
-  Initial{mutability: $:} rule{id: $:}
+  Initial<mutability: $:> rule<id: $:>
 mutation: >
-  Mutated{old-mi: from MI=$:}{new-mi: to MI=$:}
+  Mutated<old-mi: from MI=$:><new-mi: to MI=$:>
 renumbering: >
   Renumbered
 reenactment: >
-  Re-enacted(?){unchanged: and amended:}
+  Re-enacted({})<unchanged: and amended:>
 amendment: >
-  Amended{uncounted::(?)}
+  Amended<uncounted::({})>
 infection-amendment: >
-  Infected and amended(?)
+  Infected and amended({})
 infection: >
   Infected
 retitling: >
   Retitled
 power-change: >
-  Power changed{old-power: from $:}{new-power: to $:}"
+  Power changed<old-power: from $:><new-power: to $:>"
 repeal: >
   Repealed
 committee-assignment: >
-  Assigned to the {committee:$:}
+  Assigned to the <committee:$:>
 unknown: >
   History unknown...
 default: >

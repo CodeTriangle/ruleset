@@ -61,20 +61,20 @@ def chtype_string(change):
     
     if try_get(change_types, chtype):
         result = change_types[chtype]
-        start_idx = result.find("{")
+        start_idx = result.find("<")
         
         while start_idx != -1:
-            end_idx = result.find("}")
+            end_idx = result.find(">")
             expr = result[start_idx + 1:end_idx].split(":")
             joiner = ""
 
-            if try_get(change, expr[0]) :
+            if try_get(change, expr[0]):
                 joiner = expr[1].replace("$", str(change[expr[0]]))
             else:
                 joiner = expr[2]
             
             result = joiner.join([result[:start_idx], result[end_idx+1:]])
-            start_idx = result.find("{")
+            start_idx = result.find("<")
 
         return result.strip()
     
