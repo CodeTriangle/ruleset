@@ -57,12 +57,12 @@ def write_file(fn: str, tx: str):
         f.write(tx)
 
 def try_get(d: dict, k):
-    """Attempt to get item `k` of `d`; return empty string if doesn't exist"""
+    """Attempt to get item `k` of `d`; return None if doesn't exist"""
 
     try:
         return d[k]
     except KeyError:
-        return ""
+        return None
 
 def get_hash(tx: str) -> str:
     """Get the SHA1 hash of `tx` and return it as a string of hex digits"""

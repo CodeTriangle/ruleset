@@ -1,0 +1,28 @@
+enactment: >
+  Enacted
+initial: >
+  Initial{mutability: $:} rule{id: $:}
+mutation: >
+  Mutated{old-mi: from MI=$:}{new-mi: to MI=$:}
+renumbering: >
+  Renumbered
+reenactment: >
+  Re-enacted(?){unchanged: and amended:}
+amendment: >
+  Amended{uncounted::(?)}
+infection-amendment: >
+  Infected and amended(?)
+infection: >
+  Infected
+retitling: >
+  Retitled
+power-change: >
+  Power changed{old-power: from $:}{new-power: to $:}"
+repeal: >
+  Repealed
+committee-assignment: >
+  Assigned to the {committee:$:}
+unknown: >
+  History unknown...
+default: >
+  Changed

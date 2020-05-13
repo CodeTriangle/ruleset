@@ -36,6 +36,11 @@ import yaml
 
 cache = {}
 
+change_types = yaml.load(
+    get_contents("templates/change-types.yml"),
+    yaml.FullLoader
+)
+
 def proposal_data(num, log=False):
     global cache
     
@@ -51,44 +56,41 @@ def proposal_data(num, log=False):
     return cache[num]
 
 def chtype_string(change):
+    global change_types
     chtype = change["type"]
-    if chtype == "enactment":
-        return "Enacted"
-    elif chtype == "initial":
-        return f"Initial {change['mutability']} rule {change['id']}"
-    elif chtype == "mutation":
-        return f"Mutated from MI={change['old-mi']} to {change['new-mi']}"
-    elif chtype == "renumbering":
-        return "Renumbered"
-    elif chtype == "reenactment":
-        return f"Re-enacted({{}}){' and amended' if try_get(change, 'unchanged') else ''}"
-    elif chtype == "amendment":
-        return f"Amended{'({})' if try_get(change, 'uncounted') else ''}"
-    elif chtype == "infection-amendment":
-        return "Infected and amended({})"
-    elif chtype == "infection":
-        return "Infected"
-    elif chtype == "retitling":
-        return "Retitled"
-    elif chtype == "repeal":
-        return "Repealed"
-    elif chtype == "power-change":
-        return f"Power changed from {change['old-power']} to {change['new-power']}"
-    elif chtype == "committee-assignment":
-        return "Assigned to the " + change["committee"]
-    elif chtype == "unknown":
-        return "History unknown..."
+    
+    if try_get(change_types, chtype):
+        result = change_types[chtype]
+        start_idx = result.find("{")
+        
+        while start_idx != -1:
+            end_idx = result.find("}")
+            expr = result[start_idx + 1:end_idx].split(":")
+            joiner = ""
+
+            if try_get(change, expr[0]) :
+                joiner = expr[1].replace("$", str(change[expr[0]]))
+            else:
+                joiner = expr[2]
+            
+            result = joiner.join([result[:start_idx], result[end_idx+1:]])
+            start_idx = result.find("{")
+
+        return result.strip()
+    
     else:
         print("\tunrecognised type: " + chtype)
-        return "Changed"
+        return change_types["default"]
 
 def agent_string(agent):
     if try_get(agent, "proposal"):
         proposal = agent["proposal"]
         result = "P" + str(proposal)
         data = proposal_data(proposal)
-        result = f"{result} '{try_get(data, 'title')}'"
         metadata = []
+        
+        if try_get(data, "title"):
+            result = f"{result} '{data['title']}'"
 
         if try_get(data, "chamber"):
             metadata.append(data["chamber"])
@@ -116,7 +118,8 @@ def agent_string(agent):
 def proposal_blame(num):
     proposal = proposal_data(num)
     result = "(" + proposal["author"]
-    if try_get(proposal, 'coauthors'):
+    
+    if try_get(proposal, "coauthors"):
         result = ", ".join([result, *proposal['coauthors']])
     return result + ")"
 

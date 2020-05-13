@@ -28,7 +28,7 @@ smkdir("meta")
 if short: smkdir("meta/short")
 if full: smkdir("meta/full")
 
-for section in yaml.load(get_contents("config/index"), Loader=yaml.FullLoader):
+for section in yaml.load(get_contents("config/index.yml"), Loader=yaml.FullLoader):
     if short: slr = slr + section_heading(section)
     if full:
         flr = flr + section_heading(section)
@@ -73,7 +73,7 @@ for section in yaml.load(get_contents("config/index"), Loader=yaml.FullLoader):
             write_file(f"meta/full/{rule}", gen)
             flr = flr + gen
 
-header = get_contents("config/header").format(
+header = get_contents("templates/header").format(
     **get_stats(),
     her=max(rules),
     num=len(rules)
@@ -91,14 +91,14 @@ power_string = "\n".join(
 )
 
 if short: write_file(
-    "slr.txt", get_contents("config/slr_format").format(
+    "slr.txt", get_contents("templates/slr").format(
         header=header, ruleset=slr
     )
 )
 
 if full:
     write_file(
-    "flr.txt", get_contents("config/flr_format").format(
+    "flr.txt", get_contents("templates/flr").format(
         header=header, line=line("-"), toc=toc, ruleset=flr, powers=power_string
     )
 )

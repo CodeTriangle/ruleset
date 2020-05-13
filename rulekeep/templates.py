@@ -32,8 +32,8 @@
 from .utils import *
 from .history import *
 
-short_rule_format = get_contents("config/short_rule_format")
-full_rule_format  = get_contents("config/full_rule_format")
+short_rule_format = get_contents("templates/short-rule")
+full_rule_format  = get_contents("templates/full-rule")
 
 def line(ch, w=72):
     return "".join([ch for i in range(0, w)])
